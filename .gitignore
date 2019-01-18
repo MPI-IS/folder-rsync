@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/folder_rsync
+folder_rsync.so
+folder_rsync.dylib
+folder_rsync.dll
+folder_rsync.a
+folder_rsync.lib
+folder_rsync-test-*
+*.exe
+*.o
+*.obj
+*.lst
+/.project

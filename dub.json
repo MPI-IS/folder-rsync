@@ -1,0 +1,8 @@
+{
+	"authors": [
+		"Joan Piles"
+	],
+	"copyright": "Copyright © 2019, Joan Piles",
+	"description": "A naïve implementation of rsync parallelisation that splits the tasks per first-level entries.",
+	"name": "folder_rsync"
+}
