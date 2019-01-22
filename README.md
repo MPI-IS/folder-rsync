@@ -9,7 +9,7 @@ Only `--dry-run`, `--delete` and `--link-dest` are parsed and taken into account
 `rsync` is a generic tool, and some use cases are beyond the scope of this tool. In particular:
 
 * It is assumed that, if hard links are to be preserved, there are no hard links across first-level folders. If there are, they won't be copied as such, but as two different files.
-* It is assumed that the last two arguments are `src` and `dst`, and that both of them are directories.   
+* It is assumed that the last two arguments are `src` and `dst`, and that both of them are **local** directories.   
 
 # Usage
 

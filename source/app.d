@@ -43,6 +43,10 @@ void main(string[] args)
 	auto dstArg = args[args.length - 1];
 	trace("Destination folder: ", dstArg);
 	
+	enforce(!srcArg.canFind(':') || (srcArg.countUntil(':') > srcArg.countUntil('/')), "The source folder must be local.");
+	enforce(!dstArg.canFind(':') || (dstArg.countUntil(':') > dstArg.countUntil('/')), "The destination folder must be local.");
+	
+	
 	bool mustDelete = args.canFind("--delete");
 	trace("--delete found: ", mustDelete);
 	
