@@ -1,6 +1,6 @@
 void main(string[] args)
 {
-	import std.stdio : writeln;
+	import std.stdio;
 	import std.process;
 	import std.parallelism : totalCPUs;
 	import std.exception : enforce;
@@ -12,7 +12,7 @@ void main(string[] args)
 	import std.algorithm.sorting : sort;
 	import std.algorithm.setops : setDifference;
 	import std.algorithm.mutation;
-	import std.string : startsWith, chomp;
+	import std.string;
 	import std.array : array, split;
 
 	import std.experimental.logger;
@@ -46,7 +46,8 @@ void main(string[] args)
 	enforce(!srcArg.canFind(':') || (srcArg.countUntil(':') > srcArg.countUntil('/')), "The source folder must be local.");
 	enforce(!dstArg.canFind(':') || (dstArg.countUntil(':') > dstArg.countUntil('/')), "The destination folder must be local.");
 	
-	
+	auto srcHasTrailingSlash = (dstArg[$-1] == '/');
+
 	bool mustDelete = args.canFind("--delete");
 	trace("--delete found: ", mustDelete);
 	
@@ -55,6 +56,7 @@ void main(string[] args)
 	
 	auto linkDestArg = args.countUntil!"a.startsWith(\"--link-dest=\")";
 	trace ("--link-dest argument found at position: ", linkDestArg);
+	
 	// START OPERATION
 	
 	// Abort if src doesn't exist or is not a folder.
@@ -74,6 +76,25 @@ void main(string[] args)
 			mkdir(dstArg);
 		}
 	}
+
+	// If there is no slash, we have to create the directory itself if it's missing
+	
+	string srcEntry = "";
+
+	if (!srcHasTrailingSlash) {
+		srcEntry = 	srcArg[srcArg.lastIndexOf('/')..$]; // The "/" is included
+		dstArg ~= srcEntry ~ "/";
+		trace("Definitive dst folder because of lacking trailing / in the source: ", dstArg);
+		if (!dstArg.exists) {
+			trace("Creating destination folder ", dstArg);
+			if (dryRun) {
+				info("Dry run: skipping destination folder creation.");
+			} else {
+				mkdir(dstArg);
+			}
+		}
+	}
+	
 
 	if (!dryRun) {
 		enforce(dstArg.exists, "The destination directory doesn't exist and can't be created");
@@ -98,6 +119,9 @@ void main(string[] args)
 	if ( (!dryRun) || (dstArg.exists && dstArg.isDir) ) {
 		dstEntries = dst.dirEntries(SpanMode.shallow, false).array;
 	}
+
+	stdout.flush;
+	stderr.flush;
 	
 	// If needed, delete directories form dst not present in src
 	if (mustDelete) {
@@ -126,27 +150,24 @@ void main(string[] args)
 	
 	string rsyncPath = executeShell("which rsync").output.chomp;
 	info("Found rsync at ", rsyncPath);
+	stdout.flush;
+	stderr.flush;
 	
 	foreach(entry ; parallel(srcEntries)) {
 		auto newArgs = args.dup;
 		newArgs[0] = rsyncPath;
-		string toAdd = "/" ~ entry.name.split('/')[$-1];
 		if (linkDestArg > 0) {
-			// Add the folder to the --link-dest argument if it existes
-			string newLinkDest = newArgs[linkDestArg].findSplitAfter("=")[1] ~ toAdd;
-			if (newLinkDest.exists) {
-				trace("[Worker ", taskPool.workerIndex, "] Link destination subfolder ", newLinkDest, " exists.");
-				newArgs[linkDestArg] ~= toAdd;
-			} else {
-				trace("[Worker ", taskPool.workerIndex, "] Link destination subfolder ", newLinkDest, " doesn't exist, skipping.");
-				newArgs = removeElement(newArgs,linkDestArg);
-			}
+			newArgs[linkDestArg] ~= srcEntry;
 		}
-		newArgs[$-1] ~= "/" ~ entry.name.split('/')[$-1];
 		newArgs[$-2] ~= "/" ~ entry.name.split('/')[$-1];
+		newArgs[$-1] ~= srcEntry ~ "/";
 		
 		trace("[Worker ", taskPool.workerIndex, "] Executing: ", newArgs);
+		stdout.flush;
+		stderr.flush;
 		spawnProcess(newArgs).wait;
 		trace("[Worker ", taskPool.workerIndex, "] Done.");
+		stdout.flush;
+		stderr.flush;
 	}
 }
