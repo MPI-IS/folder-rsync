@@ -1,4 +1,4 @@
-void main(string[] args)
+int main(string[] args)
 {
 	import std.stdio;
 	import std.process;
@@ -16,6 +16,8 @@ void main(string[] args)
 	import std.array : array, split;
 
 	import std.experimental.logger;
+	
+	enum RSYNC_PARTIAL_TRANSFER = 24;
 	
 	alias remove = std.file.remove;
 	alias removeElement = std.algorithm.mutation.remove;
@@ -152,6 +154,8 @@ void main(string[] args)
 	info("Found rsync at ", rsyncPath);
 	stdout.flush;
 	stderr.flush;
+
+	int errCode = 0;
 	
 	foreach(entry ; parallel(srcEntries)) {
 		auto newArgs = args.dup;
@@ -165,9 +169,30 @@ void main(string[] args)
 		trace("[Worker ", taskPool.workerIndex, "] Executing: ", newArgs);
 		stdout.flush;
 		stderr.flush;
-		spawnProcess(newArgs).wait;
+		int ret = spawnProcess(newArgs).wait;
+		
+		switch(ret) {
+			case 0:
+				break;
+			
+			case RSYNC_PARTIAL_TRANSFER: // Partial transfer due to vanished source files
+				// Here we return this error *only* if it's the only one
+				if (errCode == 0) {
+					errCode = RSYNC_PARTIAL_TRANSFER;
+				}
+				break;
+			default:
+					 // For any other error codes, we report only the first.
+				if (errCode == 0 || errCode == RSYNC_PARTIAL_TRANSFER) {
+					errCode = ret;
+				}
+				break;
+		}
+		
 		trace("[Worker ", taskPool.workerIndex, "] Done.");
 		stdout.flush;
 		stderr.flush;
 	}
+	
+	return errCode;
 }
