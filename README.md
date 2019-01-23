@@ -13,7 +13,17 @@ Only `--dry-run`, `--delete` and `--link-dest` are parsed and taken into account
 
 # Usage
 
-`folder_rsync <regular rsync command line options>`
+## Direct usage
+
+The tool will automatically build itself, provided that you have both DMD and DUB installed: 
+
+`folder_rsync.d <regular rsync command line options>`
+
+## Manual build
+
+You can also build it manually for distribution:
+
+`dub build --single folder_rsync.d`
 
 ## Environment variables
 

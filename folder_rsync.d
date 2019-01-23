@@ -1,3 +1,10 @@
+#!/usr/bin/env dub
+/+ dub.sdl:
+	name "folder_rsync"
+	authors "Joan Josep Piles-Contreras"
+	description "A naïve implementation of rsync parallelisation that splits the tasks per first-level entries."
++/
+
 int main(string[] args)
 {
 	import std.stdio;
