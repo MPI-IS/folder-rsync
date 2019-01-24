@@ -173,6 +173,7 @@ int main(string[] args)
 		newArgs[$-2] ~= "/" ~ entry.name.split('/')[$-1];
 		newArgs[$-1] ~= srcEntry ~ "/";
 		
+		info("[Worker ", taskPool.workerIndex, "] Processing folder ", entry);
 		trace("[Worker ", taskPool.workerIndex, "] Executing: ", newArgs);
 		stdout.flush;
 		stderr.flush;
@@ -197,9 +198,10 @@ int main(string[] args)
 		}
 		
 		trace("[Worker ", taskPool.workerIndex, "] Done.");
+		info("[Worker ", taskPool.workerIndex, "] Returned ", ret);
 		stdout.flush;
 		stderr.flush;
 	}
-	
+	info("Final return code: ", errCode);
 	return errCode;
 }
