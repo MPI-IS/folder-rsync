@@ -91,7 +91,7 @@ int main(string[] args)
 	string srcEntry = "";
 
 	if (!srcHasTrailingSlash) {
-		srcEntry = 	srcArg[srcArg.lastIndexOf('/')..$]; // The "/" is included
+		srcEntry = srcArg[srcArg.lastIndexOf('/')..$]; // The "/" is included
 		dstArg ~= srcEntry ~ "/";
 		trace("Definitive dst folder because of lacking trailing / in the source: ", dstArg);
 		if (!dstArg.exists) {
